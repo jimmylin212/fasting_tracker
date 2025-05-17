@@ -13,17 +13,10 @@ import {
   Legend,
 } from "recharts";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   ChartContainer,
   ChartTooltipContent,
   type ChartConfig,
-  ChartLegendContent 
+  ChartLegendContent
 } from "@/components/ui/chart";
 import type { WorkoutLog } from "@/lib/types";
 
@@ -31,6 +24,13 @@ type WorkoutTrendChartProps = {
   logs: WorkoutLog[];
   selectedWorkoutType: string;
 };
+
+const chartConfig = {
+  totalVolume: {
+    label: `Total Volume`, // Legend label
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
 
 export function WorkoutTrendChart({ logs, selectedWorkoutType }: WorkoutTrendChartProps) {
   const filteredLogs = logs
@@ -46,37 +46,21 @@ export function WorkoutTrendChart({ logs, selectedWorkoutType }: WorkoutTrendCha
     );
   }
   
-  const chartConfig: ChartConfig = {
-    [selectedWorkoutType]: { 
-      label: `Weight (KG)`, // Label for the legend
-      color: "hsl(var(--chart-1))",
-    },
-  };
-
-  // Ensure keys in chartConfig match the dataKey used in Line component.
-  // Here, dataKey="weight", but we want legend to show selectedWorkoutType.
-  // So, we modify data for the chart to have a key that chartConfig expects.
   const chartData = filteredLogs.map(log => ({
     date: log.date,
+    weight: log.weight,
     reps: log.reps,
     sets: log.sets,
-    [selectedWorkoutType]: log.weight, // Use workout type as key for weight
+    totalVolume: log.weight * log.reps * log.sets,
   }));
 
 
   return (
-    // Card removed from here, as it's now part of the parent component's structure
-    // <Card className="shadow-lg mt-0"> // No mt-8, parent handles spacing
-    //   <CardHeader>
-    //     <CardTitle>Progression: {selectedWorkoutType}</CardTitle>
-    //     <CardDescription>Weight lifted over time for {selectedWorkoutType}.</CardDescription>
-    //   </CardHeader>
-    //   <CardContent>
         <ChartContainer config={chartConfig} className="aspect-video h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsLineChart
-              data={chartData} // Use modified chartData
-              margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+              data={chartData}
+              margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
@@ -88,48 +72,51 @@ export function WorkoutTrendChart({ logs, selectedWorkoutType }: WorkoutTrendCha
               />
               <YAxis
                 yAxisId="left" 
-                tickFormatter={(value) => `${value} kg`}
+                tickFormatter={(value) => `${value}`}
                 tickLine={false}
                 axisLine={false}
-                domain={['dataMin - 5', 'dataMax + 5']} 
-                label={{ value: 'Weight (KG)', angle: -90, position: 'insideLeft', offset:10, style: { textAnchor: 'middle', fill: 'hsl(var(--foreground))' } }}
+                domain={['auto', 'auto']} 
+                label={{ value: 'Total Volume (kg × reps × sets)', angle: -90, position: 'insideLeft', offset:0, style: { textAnchor: 'middle', fill: 'hsl(var(--foreground))' } }}
               />
               <Tooltip
                 content={
                   <ChartTooltipContent
-                    formatter={(value, name, props) => { // name here will be selectedWorkoutType
+                    formatter={(value, name, props) => { // value is totalVolume, name is "Total Volume"
                       if (props.payload) {
-                        const { reps, sets } = props.payload;
-                        return `${value} kg (${reps} reps x ${sets} sets)`;
+                        const { weight, reps, sets } = props.payload;
+                        return (
+                          <div className="text-sm">
+                            <div className="font-semibold">{chartConfig.totalVolume.label}: {value}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Details: {weight} kg × {reps} reps × {sets} sets
+                            </div>
+                          </div>
+                        );
                       }
-                      return `${value} kg`;
+                      return `${value}`;
                     }}
-                    labelFormatter={(label, payload) => { // label is the x-axis value (date)
+                    labelFormatter={(label, payload) => { 
                         if (payload && payload.length > 0 && payload[0].payload.date) {
                            return format(new Date(payload[0].payload.date), "PPP");
                         }
-                        return label; // Fallback, should not happen if data is correct
+                        return String(label); 
                     }}
-                    nameKey={selectedWorkoutType} // Helps map to the correct label in config
                   />
                 }
               />
               <Legend content={<ChartLegendContent />} />
               <Line
                 yAxisId="left"
-                dataKey={selectedWorkoutType} // Data key matches the one in chartData
-                name={selectedWorkoutType} // Name for legend and tooltip identification
+                dataKey="totalVolume" 
+                name="Total Volume" // This name is used by Legend/Tooltip to match with chartConfig
                 type="monotone"
-                stroke={`var(--color-${selectedWorkoutType})`} // Use the dynamic key from chartConfig
+                stroke="var(--color-totalVolume)" // Uses the key from chartConfig
                 strokeWidth={2}
-                dot={{ fill: `var(--color-${selectedWorkoutType})` }}
+                dot={{ fill: "var(--color-totalVolume)" }}
                 activeDot={{ r: 6 }}
               />
             </RechartsLineChart>
           </ResponsiveContainer>
         </ChartContainer>
-    //   </CardContent>
-    // </Card>
   );
 }
-
