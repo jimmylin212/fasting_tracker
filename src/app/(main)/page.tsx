@@ -1,133 +1,119 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { FastingLog } from '@/lib/types';
-import { format, formatDistanceStrict, addHours } from 'date-fns';
+import { format, formatDistanceStrict, addHours, isAfter, isBefore, isValid } from 'date-fns';
 import { Hourglass, PlayCircle, StopCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, doc, Timestamp, serverTimestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Helper function to convert Firestore Timestamps to Dates for a single log
-const convertLogTimestampsToDates = (log: any): FastingLog => {
-  return {
-    ...log,
-    id: log.id,
-    startTime: (log.startTime as Timestamp)?.toDate ? (log.startTime as Timestamp).toDate() : new Date(log.startTime),
-    endTime: (log.endTime as Timestamp)?.toDate ? (log.endTime as Timestamp).toDate() : new Date(log.endTime),
-  } as FastingLog;
-};
-
-
 export default function HomePage() {
-  const { currentUser } = useAuth();
+  const [fastingLogs, setFastingLogs] = useState<FastingLog[]>([]);
   const [currentFast, setCurrentFast] = useState<FastingLog | null>(null);
   const [elapsedTime, setElapsedTime] = useState<string>("0 seconds");
-  const [loadingStatus, setLoadingStatus] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
   
-  // This useEffect will listen for all fasting logs for the user.
-  // Then, findCurrentFast will determine the active one.
+  // Effect to run once on component mount to set isClient
   useEffect(() => {
-    if (!currentUser) {
-      setCurrentFast(null);
-      setLoadingStatus(false);
-      return;
-    }
+    setIsClient(true);
+  }, []);
 
-    setLoadingStatus(true);
-    setError(null);
-
-    const fastingLogsCollectionRef = collection(db, 'users', currentUser.uid, 'fastingLogs');
-    const q = query(fastingLogsCollectionRef, orderBy('startTime', 'desc')); // Get all, newest first
-
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const now = new Date();
-      let activeFast: FastingLog | null = null;
-
-      for (const document of querySnapshot.docs) {
-        const logData = convertLogTimestampsToDates({ id: document.id, ...document.data() });
-        if (logData.startTime <= now && (logData.endTime === null || (logData.endTime as Date) > now)) {
-          activeFast = logData;
-          break; // Found the most recent active fast
+  // Load all logs from localStorage when isClient becomes true
+  useEffect(() => {
+    if (isClient) {
+      const storedLogs = localStorage.getItem('fastingLogs');
+      if (storedLogs) {
+        try {
+          const parsedLogs = JSON.parse(storedLogs, (key, value) => {
+            if (key === 'startTime' || key === 'endTime') {
+              const date = new Date(value);
+              return isValid(date) ? date : null; // Ensure dates are valid
+            }
+            return value;
+          }) as FastingLog[];
+          setFastingLogs(parsedLogs.filter(log => log.startTime && log.endTime).sort((a, b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime()));
+        } catch (error) {
+          console.error("Error parsing fasting logs from localStorage on Home:", error);
+          setFastingLogs([]);
         }
+      } else {
+        setFastingLogs([]);
       }
-      setCurrentFast(activeFast);
-      setLoadingStatus(false);
-    }, (err) => {
-      console.error("Error fetching fasting status: ", err);
-      setError("Failed to load fasting status.");
-      setLoadingStatus(false);
-    });
+    }
+  }, [isClient]);
 
-    return () => unsubscribe();
-  }, [currentUser]);
-
-
+  // Save all logs to localStorage when fastingLogs state changes
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (currentFast && currentFast.endTime) { // Ensure endTime is a Date
-      interval = setInterval(() => {
+    if (isClient) {
+      localStorage.setItem('fastingLogs', JSON.stringify(fastingLogs));
+    }
+  }, [fastingLogs, isClient]);
+
+  // Determine current fast from loaded logs
+  useEffect(() => {
+    if (!isClient) return;
+
+    const now = new Date();
+    let activeFast: FastingLog | null = null;
+    for (const log of fastingLogs) {
+      if (log.startTime && isBefore(log.startTime as Date, now) && 
+          log.endTime && isAfter(log.endTime as Date, now)) {
+        activeFast = log;
+        break; 
+      }
+    }
+    setCurrentFast(activeFast);
+  }, [fastingLogs, isClient]);
+
+  // Timer for elapsed time
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined = undefined;
+    if (currentFast && currentFast.startTime && isClient) {
+      const updateElapsedTime = () => {
         const now = new Date();
-        if (now >= (currentFast.endTime as Date)) {
-          setCurrentFast(null); // Fast has ended
-        } else {
+        if (currentFast.endTime && isBefore(currentFast.endTime as Date, now)) {
+          setCurrentFast(null); 
+          setElapsedTime("0 seconds");
+        } else if (currentFast.startTime) {
           setElapsedTime(formatDistanceStrict(now, currentFast.startTime as Date, { addSuffix: false }));
         }
-      }, 1000);
-    } else if (currentFast && !currentFast.endTime) { // Fast is ongoing without a defined end
-       interval = setInterval(() => {
-        const now = new Date();
-        setElapsedTime(formatDistanceStrict(now, currentFast.startTime as Date, { addSuffix: false }));
-      }, 1000);
+      };
+      updateElapsedTime(); 
+      interval = setInterval(updateElapsedTime, 1000);
+    } else {
+      setElapsedTime("0 seconds");
     }
-    return () => clearInterval(interval);
-  }, [currentFast]);
-
-  const handleStartFast = async () => {
-    if (!currentUser) {
-      setError("You must be logged in to start a fast.");
-      return;
-    }
-    const now = new Date();
-    const newFastData = {
-      startTime: Timestamp.fromDate(now),
-      endTime: Timestamp.fromDate(addHours(now, 16)), // Default 16 hour fast
-      notes: "Started from home page",
-      userId: currentUser.uid,
-      createdAt: serverTimestamp(),
+    return () => {
+      if (interval) clearInterval(interval);
     };
-    try {
-      const fastingLogsCollectionRef = collection(db, 'users', currentUser.uid, 'fastingLogs');
-      await addDoc(fastingLogsCollectionRef, newFastData);
-      // onSnapshot will update currentFast
-    } catch (err) {
-      console.error("Error starting fast: ", err);
-      setError("Failed to start fast. Please try again.");
-    }
+  }, [currentFast, isClient]);
+
+  const handleStartFast = () => {
+    const now = new Date();
+    const newFast: FastingLog = {
+      id: Date.now().toString(),
+      startTime: now,
+      endTime: addHours(now, 16), 
+      notes: "Started from home page",
+    };
+    setFastingLogs(prevLogs => [newFast, ...prevLogs].sort((a, b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime()));
   };
 
-  const handleEndFastNow = async () => {
-    if (currentFast && currentUser) {
+  const handleEndFastNow = () => {
+    if (currentFast) {
       const now = new Date();
-      try {
-        const fastDocRef = doc(db, 'users', currentUser.uid, 'fastingLogs', currentFast.id);
-        await updateDoc(fastDocRef, {
-          endTime: Timestamp.fromDate(now),
-        });
-        // onSnapshot will update currentFast
-      } catch (err) {
-        console.error("Error ending fast: ", err);
-        setError("Failed to end fast. Please try again.");
-      }
+      setFastingLogs(prevLogs =>
+        prevLogs.map(log =>
+          log.id === currentFast.id ? { ...log, endTime: now } : log
+        ).sort((a, b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime())
+      );
+      // currentFast state will update via the useEffect that watches fastingLogs
     }
   };
-
-  if (loadingStatus) {
+  
+  if (!isClient) {
     return (
        <div className="container mx-auto p-4 md:p-8">
         <Card className="shadow-xl max-w-md mx-auto">
@@ -146,11 +132,6 @@ export default function HomePage() {
     );
   }
   
-  if (error) {
-     return <div className="text-destructive text-center py-10">{error}</div>;
-  }
-
-
   return (
     <div className="container mx-auto p-4 md:p-8">
       <Card className="shadow-xl max-w-md mx-auto">

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Gauge, Scale, Settings, LogOut, Dumbbell, Home } from "lucide-react";
+import { CalendarDays, Gauge, Scale, Settings, Dumbbell, Home } from "lucide-react"; // LogOut removed
 import { Logo } from "@/components/icons/logo";
 import {
   Sidebar,
@@ -16,8 +16,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/hooks/use-auth"; // Import useAuth
-import { Button } from "../ui/button"; // For styling logout if needed
+// import { useAuth } from "@/hooks/use-auth"; // Removed
+// import { Button } from "../ui/button"; // Removed
 
 const navItems = [
   { href: "/", icon: Home, label: "Home" },
@@ -29,15 +29,15 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { logout, currentUser } = useAuth(); // Get logout function and currentUser
+  // const { logout, currentUser } = useAuth(); // Removed
 
-  const handleLogout = async () => {
-    await logout();
-  };
+  // const handleLogout = async () => { // Removed
+  //   await logout();
+  // };
 
-  if (!currentUser) {
-    return null; // Don't render sidebar if user is not logged in (main layout handles redirect)
-  }
+  // if (!currentUser) { // Removed
+  //   return null; 
+  // }
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
@@ -77,12 +77,7 @@ export function AppSidebar() {
                     <span>Settings</span>
                 </SidebarMenuButton>
             </SidebarMenuItem> */}
-            <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Logout" variant="outline" onClick={handleLogout}>
-                    <LogOut />
-                    <span>Logout</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
+            {/* Logout button removed */}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
