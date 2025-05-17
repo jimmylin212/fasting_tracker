@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -129,7 +130,7 @@ export function AddFastingLogForm({ onAddLog }: AddFastingLogFormProps) {
             control={form.control}
             name="startTime"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col"> {/* Added flex flex-col for consistency */}
                 <FormLabel>Start Time</FormLabel>
                 <FormControl>
                   <Input type="time" {...field} />
@@ -180,7 +181,7 @@ export function AddFastingLogForm({ onAddLog }: AddFastingLogFormProps) {
             control={form.control}
             name="endTime"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col"> {/* Added flex flex-col for consistency */}
                 <FormLabel>End Time</FormLabel>
                 <FormControl>
                   <Input type="time" {...field} />
