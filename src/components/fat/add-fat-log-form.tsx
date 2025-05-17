@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -40,13 +41,13 @@ export function AddFatLogForm({ onAddLog }: AddFatLogFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       date: new Date(),
-      fatPercentage: undefined,
+      fatPercentage: "" as unknown as number, // Keep it controlled with empty string
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onAddLog(values);
-    form.reset({date: new Date(), fatPercentage: undefined});
+    form.reset({date: new Date(), fatPercentage: "" as unknown as number});
   }
 
   return (
@@ -102,7 +103,7 @@ export function AddFatLogForm({ onAddLog }: AddFatLogFormProps) {
               <FormItem>
                 <FormLabel>Body Fat % (e.g., 15.2)</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.1" placeholder="Enter fat %" {...field} />
+                  <Input type="number" step="0.1" placeholder="Enter fat %" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

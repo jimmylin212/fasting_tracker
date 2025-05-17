@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -40,13 +41,13 @@ export function AddWeightLogForm({ onAddLog }: AddWeightLogFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       date: new Date(),
-      weight: undefined,
+      weight: "" as unknown as number, // Keep it controlled with empty string
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onAddLog(values);
-    form.reset({ date: new Date(), weight: undefined });
+    form.reset({ date: new Date(), weight: "" as unknown as number });
   }
 
   return (
@@ -102,7 +103,7 @@ export function AddWeightLogForm({ onAddLog }: AddWeightLogFormProps) {
               <FormItem>
                 <FormLabel>Weight (e.g., 70.5)</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.1" placeholder="Enter weight" {...field} />
+                  <Input type="number" step="0.1" placeholder="Enter weight" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

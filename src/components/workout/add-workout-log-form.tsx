@@ -45,9 +45,9 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
     defaultValues: {
       date: new Date(),
       workoutType: "",
-      weight: undefined,
-      reps: undefined,
-      sets: undefined,
+      weight: "" as unknown as number, // Keep it controlled with empty string
+      reps: "" as unknown as number,   // Keep it controlled with empty string
+      sets: "" as unknown as number,   // Keep it controlled with empty string
     },
   });
 
@@ -56,9 +56,9 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
     form.reset({
       date: new Date(),
       workoutType: "",
-      weight: undefined,
-      reps: undefined,
-      sets: undefined,
+      weight: "" as unknown as number,
+      reps: "" as unknown as number,
+      sets: "" as unknown as number,
     });
   }
 
@@ -128,7 +128,7 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
               <FormItem>
                 <FormLabel>Weight (KG)</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.1" placeholder="e.g., 50" {...field} />
+                  <Input type="number" step="0.1" placeholder="e.g., 50" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,7 +141,7 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
               <FormItem>
                 <FormLabel>Reps (per set)</FormLabel>
                 <FormControl>
-                  <Input type="number" step="1" placeholder="e.g., 10" {...field} />
+                  <Input type="number" step="1" placeholder="e.g., 10" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -154,7 +154,7 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
               <FormItem>
                 <FormLabel>Sets</FormLabel>
                 <FormControl>
-                  <Input type="number" step="1" placeholder="e.g., 3" {...field} />
+                  <Input type="number" step="1" placeholder="e.g., 3" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
