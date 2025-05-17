@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Gauge, Scale, Settings, LogOut, Dumbbell } from "lucide-react";
+import { CalendarDays, Gauge, Scale, Settings, LogOut, Dumbbell, Home } from "lucide-react";
 import { Logo } from "@/components/icons/logo";
 import {
   Sidebar,
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 const navItems = [
+  { href: "/", icon: Home, label: "Home" },
   { href: "/fasting", icon: CalendarDays, label: "Fasting" },
   { href: "/weight", icon: Scale, label: "Weight" },
   { href: "/fat", icon: Gauge, label: "Body Fat" },
@@ -43,7 +45,7 @@ export function AppSidebar() {
               <Link href={item.href} legacyBehavior passHref>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.href)}
+                  isActive={pathname === item.href} // Exact match for home, startsWith for others might be needed if nested routes
                   tooltip={item.label}
                 >
                   <a>
