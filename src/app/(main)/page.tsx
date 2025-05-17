@@ -7,111 +7,149 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { FastingLog } from '@/lib/types';
 import { format, formatDistanceStrict, addHours } from 'date-fns';
 import { Hourglass, PlayCircle, StopCircle } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, doc, Timestamp, serverTimestamp } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock initial data - consistent with FastingPage for initial state if localStorage is empty
-const initialLogs: FastingLog[] = [
-  { id: '1', startTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000 - 5 * 60 * 60 * 1000), endTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000 + 11 * 60 * 60 * 1000), notes: "Felt great!" },
-  { id: '2', startTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000 - 8 * 60 * 60 * 1000), endTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000), notes: "A bit hungry towards the end." },
-];
+// Helper function to convert Firestore Timestamps to Dates for a single log
+const convertLogTimestampsToDates = (log: any): FastingLog => {
+  return {
+    ...log,
+    id: log.id,
+    startTime: (log.startTime as Timestamp)?.toDate ? (log.startTime as Timestamp).toDate() : new Date(log.startTime),
+    endTime: (log.endTime as Timestamp)?.toDate ? (log.endTime as Timestamp).toDate() : new Date(log.endTime),
+  } as FastingLog;
+};
+
 
 export default function HomePage() {
-  const [fastingLogs, setFastingLogs] = useState<FastingLog[]>([]);
+  const { currentUser } = useAuth();
   const [currentFast, setCurrentFast] = useState<FastingLog | null>(null);
   const [elapsedTime, setElapsedTime] = useState<string>("0 seconds");
-  const [isClient, setIsClient] = useState(false);
-
+  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // This useEffect will listen for all fasting logs for the user.
+  // Then, findCurrentFast will determine the active one.
   useEffect(() => {
-    setIsClient(true);
-    // Load logs from localStorage or use initialLogs if localStorage is empty/first load
-    const storedLogs = localStorage.getItem('fastingLogs');
-    if (storedLogs) {
-      const parsedLogs = JSON.parse(storedLogs, (key, value) => {
-        if (key === 'startTime' || key === 'endTime') {
-          return new Date(value);
+    if (!currentUser) {
+      setCurrentFast(null);
+      setLoadingStatus(false);
+      return;
+    }
+
+    setLoadingStatus(true);
+    setError(null);
+
+    const fastingLogsCollectionRef = collection(db, 'users', currentUser.uid, 'fastingLogs');
+    const q = query(fastingLogsCollectionRef, orderBy('startTime', 'desc')); // Get all, newest first
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const now = new Date();
+      let activeFast: FastingLog | null = null;
+
+      for (const document of querySnapshot.docs) {
+        const logData = convertLogTimestampsToDates({ id: document.id, ...document.data() });
+        if (logData.startTime <= now && (logData.endTime === null || (logData.endTime as Date) > now)) {
+          activeFast = logData;
+          break; // Found the most recent active fast
         }
-        return value;
-      }) as FastingLog[];
-      setFastingLogs(parsedLogs.sort((a,b) => b.startTime.getTime() - a.startTime.getTime()));
-    } else {
-      // Set initial logs if local storage is empty, sorted newest first
-      const sortedInitialLogs = initialLogs.sort((a,b) => b.startTime.getTime() - a.startTime.getTime());
-      setFastingLogs(sortedInitialLogs);
-      // Also save these initial logs to localStorage immediately
-      localStorage.setItem('fastingLogs', JSON.stringify(sortedInitialLogs));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isClient) {
-      // Sort logs by start time descending before saving
-      const logsToSave = [...fastingLogs].sort((a,b) => b.startTime.getTime() - a.startTime.getTime());
-      localStorage.setItem('fastingLogs', JSON.stringify(logsToSave));
-    }
-  }, [fastingLogs, isClient]);
-
-  const findCurrentFast = useCallback(() => {
-    const now = new Date();
-    // Consider logs that have started
-    const relevantLogs = fastingLogs
-      .filter(log => log.startTime <= now)
-      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime()); // newest first
-
-    if (relevantLogs.length > 0) {
-      const latestStartedFast = relevantLogs[0];
-      // Check if the fast has an end time and if it's in the future
-      if (latestStartedFast.endTime && latestStartedFast.endTime > now) {
-        setCurrentFast(latestStartedFast);
-        return;
       }
-    }
-    setCurrentFast(null);
-  }, [fastingLogs]);
+      setCurrentFast(activeFast);
+      setLoadingStatus(false);
+    }, (err) => {
+      console.error("Error fetching fasting status: ", err);
+      setError("Failed to load fasting status.");
+      setLoadingStatus(false);
+    });
 
-  useEffect(() => {
-    if (isClient) {
-      findCurrentFast();
-    }
-  }, [fastingLogs, isClient, findCurrentFast]);
+    return () => unsubscribe();
+  }, [currentUser]);
+
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (currentFast && isClient && currentFast.endTime) {
+    if (currentFast && currentFast.endTime) { // Ensure endTime is a Date
       interval = setInterval(() => {
         const now = new Date();
-        if (now >= currentFast.endTime!) { // Added null check for currentFast.endTime
-          findCurrentFast(); 
+        if (now >= (currentFast.endTime as Date)) {
+          setCurrentFast(null); // Fast has ended
         } else {
-          setElapsedTime(formatDistanceStrict(now, currentFast.startTime, { addSuffix: false }));
+          setElapsedTime(formatDistanceStrict(now, currentFast.startTime as Date, { addSuffix: false }));
         }
+      }, 1000);
+    } else if (currentFast && !currentFast.endTime) { // Fast is ongoing without a defined end
+       interval = setInterval(() => {
+        const now = new Date();
+        setElapsedTime(formatDistanceStrict(now, currentFast.startTime as Date, { addSuffix: false }));
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [currentFast, isClient, findCurrentFast]);
+  }, [currentFast]);
 
-  const handleStartFast = () => {
+  const handleStartFast = async () => {
+    if (!currentUser) {
+      setError("You must be logged in to start a fast.");
+      return;
+    }
     const now = new Date();
-    const newFast: FastingLog = {
-      id: Date.now().toString(),
-      startTime: now,
-      endTime: addHours(now, 16), // Default 16 hour fast
+    const newFastData = {
+      startTime: Timestamp.fromDate(now),
+      endTime: Timestamp.fromDate(addHours(now, 16)), // Default 16 hour fast
       notes: "Started from home page",
+      userId: currentUser.uid,
+      createdAt: serverTimestamp(),
     };
-    setFastingLogs(prevLogs => [newFast, ...prevLogs].sort((a,b) => b.startTime.getTime() - a.startTime.getTime()));
-  };
-
-  const handleEndFastNow = () => {
-    if (currentFast) {
-      const now = new Date();
-      const updatedLogs = fastingLogs.map(log =>
-        log.id === currentFast.id ? { ...log, endTime: now } : log
-      );
-      setFastingLogs(updatedLogs.sort((a,b) => b.startTime.getTime() - a.startTime.getTime()));
+    try {
+      const fastingLogsCollectionRef = collection(db, 'users', currentUser.uid, 'fastingLogs');
+      await addDoc(fastingLogsCollectionRef, newFastData);
+      // onSnapshot will update currentFast
+    } catch (err) {
+      console.error("Error starting fast: ", err);
+      setError("Failed to start fast. Please try again.");
     }
   };
 
-  if (!isClient) {
-    return <div className="flex justify-center items-center h-screen"><p>Loading status...</p></div>;
+  const handleEndFastNow = async () => {
+    if (currentFast && currentUser) {
+      const now = new Date();
+      try {
+        const fastDocRef = doc(db, 'users', currentUser.uid, 'fastingLogs', currentFast.id);
+        await updateDoc(fastDocRef, {
+          endTime: Timestamp.fromDate(now),
+        });
+        // onSnapshot will update currentFast
+      } catch (err) {
+        console.error("Error ending fast: ", err);
+        setError("Failed to end fast. Please try again.");
+      }
+    }
+  };
+
+  if (loadingStatus) {
+    return (
+       <div className="container mx-auto p-4 md:p-8">
+        <Card className="shadow-xl max-w-md mx-auto">
+          <CardHeader className="text-center">
+            <Skeleton className="h-8 w-3/4 mx-auto mb-2" />
+            <Skeleton className="h-4 w-1/2 mx-auto" />
+          </CardHeader>
+          <CardContent className="text-center space-y-6">
+            <Skeleton className="h-16 w-16 mx-auto rounded-full" />
+            <Skeleton className="h-6 w-1/2 mx-auto" />
+            <Skeleton className="h-4 w-3/4 mx-auto" />
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
+  
+  if (error) {
+     return <div className="text-destructive text-center py-10">{error}</div>;
+  }
+
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -129,11 +167,11 @@ export default function HomePage() {
                 Fasting for: <span className="font-medium text-primary">{elapsedTime}</span>
               </p>
               <p className="text-sm text-muted-foreground">
-                Started: {format(currentFast.startTime, "MMM d, yyyy 'at' HH:mm")}
+                Started: {format(currentFast.startTime as Date, "MMM d, yyyy 'at' HH:mm")}
               </p>
               {currentFast.endTime && (
                 <p className="text-sm text-muted-foreground">
-                  Planned End: {format(currentFast.endTime, "MMM d, yyyy 'at' HH:mm")}
+                  Planned End: {format(currentFast.endTime as Date, "MMM d, yyyy 'at' HH:mm")}
                 </p>
               )}
               <Button onClick={handleEndFastNow} variant="destructive" className="w-full">
