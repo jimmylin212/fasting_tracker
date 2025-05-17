@@ -2,11 +2,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { FastingLog } from '@/lib/types';
 import { format, formatDistanceStrict, addHours, isAfter, isBefore, isValid } from 'date-fns';
-import { Hourglass, PlayCircle, StopCircle } from 'lucide-react';
+import { Hourglass, PlayCircle, StopCircle, CalendarDays } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function HomePage() {
@@ -57,6 +58,10 @@ export default function HomePage() {
 
     const now = new Date();
     let activeFast: FastingLog | null = null;
+    // Find the first log that is currently active (startTime is past, endTime is future)
+    // This assumes logs are sorted with most recent startTime first, or we find the most relevant one.
+    // For simplicity, let's find any log that is currently "active" based on its start/end times.
+    // A more robust solution might ensure only one "current" fast can exist or take the latest one.
     for (const log of fastingLogs) {
       if (log.startTime && isBefore(log.startTime as Date, now) && 
           log.endTime && isAfter(log.endTime as Date, now)) {
@@ -65,7 +70,7 @@ export default function HomePage() {
       }
     }
     setCurrentFast(activeFast);
-  }, [fastingLogs, isClient]);
+  }, [fastingLogs, isClient]); // Re-evaluate when fastingLogs change or client status changes
 
   // Timer for elapsed time
   useEffect(() => {
@@ -74,6 +79,9 @@ export default function HomePage() {
       const updateElapsedTime = () => {
         const now = new Date();
         if (currentFast.endTime && isBefore(currentFast.endTime as Date, now)) {
+          // Fast has ended, clear currentFast which will stop the timer.
+          // The useEffect watching fastingLogs will handle this if endTime was updated.
+          // This handles cases where time naturally passes the endTime.
           setCurrentFast(null); 
           setElapsedTime("0 seconds");
         } else if (currentFast.startTime) {
@@ -95,10 +103,15 @@ export default function HomePage() {
     const newFast: FastingLog = {
       id: Date.now().toString(),
       startTime: now,
-      endTime: addHours(now, 16), 
+      endTime: addHours(now, 16), // Default 16-hour fast
       notes: "Started from home page",
     };
-    setFastingLogs(prevLogs => [newFast, ...prevLogs].sort((a, b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime()));
+    // Add new fast and update currentFast state immediately
+    setFastingLogs(prevLogs => {
+        const updatedLogs = [newFast, ...prevLogs].sort((a,b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime());
+        // setCurrentFast(newFast); // This line is actually handled by the useEffect that watches fastingLogs
+        return updatedLogs;
+    });
   };
 
   const handleEndFastNow = () => {
@@ -126,6 +139,7 @@ export default function HomePage() {
             <Skeleton className="h-6 w-1/2 mx-auto" />
             <Skeleton className="h-4 w-3/4 mx-auto" />
             <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full mt-2" />
           </CardContent>
         </Card>
       </div>
@@ -139,7 +153,7 @@ export default function HomePage() {
           <CardTitle className="text-3xl font-bold tracking-tight">Fasting Status</CardTitle>
           <CardDescription>Your current fasting progress.</CardDescription>
         </CardHeader>
-        <CardContent className="text-center space-y-6">
+        <CardContent className="text-center space-y-4">
           {currentFast ? (
             <>
               <Hourglass className="h-16 w-16 mx-auto text-primary" />
@@ -148,7 +162,7 @@ export default function HomePage() {
                 Fasting for: <span className="font-medium text-primary">{elapsedTime}</span>
               </p>
               <p className="text-sm text-muted-foreground">
-                Started: {format(currentFast.startTime as Date, "MMM d, yyyy 'at' HH:mm")}
+                Started: {currentFast.startTime ? format(currentFast.startTime as Date, "MMM d, yyyy 'at' HH:mm") : 'N/A'}
               </p>
               {currentFast.endTime && (
                 <p className="text-sm text-muted-foreground">
@@ -169,6 +183,11 @@ export default function HomePage() {
               </Button>
             </>
           )}
+          <Button variant="outline" className="w-full mt-2" asChild>
+            <Link href="/fasting">
+              <CalendarDays className="mr-2 h-5 w-5" /> View Fasting Logs & Calendar
+            </Link>
+          </Button>
         </CardContent>
       </Card>
     </div>
