@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Gauge, Scale, Settings, LogOut } from "lucide-react";
+import { CalendarDays, Gauge, Scale, Settings, LogOut, Dumbbell } from "lucide-react";
 import { Logo } from "@/components/icons/logo";
 import {
   Sidebar,
@@ -21,6 +21,7 @@ const navItems = [
   { href: "/fasting", icon: CalendarDays, label: "Fasting" },
   { href: "/weight", icon: Scale, label: "Weight" },
   { href: "/fat", icon: Gauge, label: "Body Fat" },
+  { href: "/workout", icon: Dumbbell, label: "Workout" },
 ];
 
 export function AppSidebar() {

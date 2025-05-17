@@ -20,9 +20,11 @@ export function FastingCalendarView({ logs }: FastingCalendarViewProps) {
     logs.forEach(log => {
       let current = startOfDay(log.startTime);
       const end = startOfDay(log.endTime);
-      while (current <= end) {
-        daysWithFasting.push(new Date(current));
-        current.setDate(current.getDate() + 1);
+      // Create a new date for current to avoid modifying the original log.startTime
+      let iterCurrent = new Date(current);
+      while (iterCurrent <= end) {
+        daysWithFasting.push(new Date(iterCurrent));
+        iterCurrent.setDate(iterCurrent.getDate() + 1);
       }
     });
     return { fasting: daysWithFasting };
@@ -31,7 +33,7 @@ export function FastingCalendarView({ logs }: FastingCalendarViewProps) {
   const fastingDayStyles = {
     fasting: {
       backgroundColor: 'hsl(var(--accent) / 0.3)',
-      color: 'hsl(var(--accent-foreground))',
+      // color: 'hsl(var(--accent-foreground))', // Keep default text color for readability
       borderRadius: '0.0rem', // Square indicator
     },
     selected: {
@@ -41,7 +43,7 @@ export function FastingCalendarView({ logs }: FastingCalendarViewProps) {
   };
   
   const logsForSelectedDate = useMemo(() => {
-    if (!selectedDate) return logs; // Show all if no date selected, or handle differently
+    if (!selectedDate) return logs.sort((a,b) => b.startTime.getTime() - a.startTime.getTime()); 
     return logs.filter(log => 
       isSameDay(log.startTime, selectedDate) || 
       isSameDay(log.endTime, selectedDate) ||
@@ -81,11 +83,16 @@ export function FastingCalendarView({ logs }: FastingCalendarViewProps) {
               <ul className="space-y-3">
                 {logsForSelectedDate.map((log) => {
                   const duration = differenceInHours(log.endTime, log.startTime);
+                  const startTimeFormatted = format(log.startTime, 'MMM d, HH:mm');
+                  const endTimeFormatted = isSameDay(log.startTime, log.endTime)
+                    ? format(log.endTime, 'HH:mm')
+                    : format(log.endTime, 'MMM d, HH:mm');
+                  
                   return (
                     <li key={log.id} className="p-3 border rounded-md bg-muted/50">
                       <div className="flex justify-between items-center mb-1">
                         <p className="font-semibold text-sm">
-                          {format(log.startTime, 'MMM d, HH:mm')} - {format(log.endTime, 'HH:mm')}
+                          {startTimeFormatted} - {endTimeFormatted}
                         </p>
                         <Badge variant="secondary">{duration} hours</Badge>
                       </div>

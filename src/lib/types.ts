@@ -16,3 +16,12 @@ export interface FatLog {
   date: Date;
   fatPercentage: number; // as a percentage value
 }
+
+export interface WorkoutLog {
+  id: string;
+  date: Date;
+  workoutType: string;
+  weight: number; // KG
+  reps: number;
+  sets: number;
+}
