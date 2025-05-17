@@ -100,7 +100,7 @@ export function AddFatLogForm({ onAddLog }: AddFatLogFormProps) {
             control={form.control}
             name="fatPercentage"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col"> {/* Added flex flex-col */}
                 <FormLabel>Body Fat % (e.g., 15.2)</FormLabel>
                 <FormControl>
                   <Input type="number" step="0.1" placeholder="Enter fat %" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />

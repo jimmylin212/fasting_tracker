@@ -100,7 +100,7 @@ export function AddWeightLogForm({ onAddLog }: AddWeightLogFormProps) {
             control={form.control}
             name="weight"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col"> {/* Added flex flex-col */}
                 <FormLabel>Weight (e.g., 70.5)</FormLabel>
                 <FormControl>
                   <Input type="number" step="0.1" placeholder="Enter weight" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />
