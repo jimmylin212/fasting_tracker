@@ -71,7 +71,8 @@ export default function WorkoutPage() {
       const sorted = updatedLogs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       
       // If this is the first log of a new type, or no trend is selected, select it.
-      if (!selectedWorkoutTypeForTrend || !uniqueWorkoutTypes.includes(newLog.workoutType)) {
+      const currentUniqueTypes = Array.from(new Set(sorted.map(log => log.workoutType).filter(Boolean)));
+      if (!selectedWorkoutTypeForTrend || !currentUniqueTypes.includes(newLog.workoutType)) {
         setSelectedWorkoutTypeForTrend(newLog.workoutType);
       }
       return sorted;
@@ -101,7 +102,7 @@ export default function WorkoutPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>Workout Progression</CardTitle>
-            <CardDescription>Select a workout type to see how your weight lifted has progressed over time.</CardDescription>
+            <CardDescription>Select a workout type to see how your weight lifted has progressed over time. You can also click on a workout type in the history below.</CardDescription>
           </CardHeader>
           <CardContent>
             <Select
@@ -124,13 +125,13 @@ export default function WorkoutPage() {
             ) : selectedWorkoutTypeForTrend ? (
                  <p className="text-muted-foreground text-center py-4">No data yet for {selectedWorkoutTypeForTrend}.</p>
             ) : (
-                 <p className="text-muted-foreground text-center py-4">Please select a workout type to view its trend.</p>
+                 <p className="text-muted-foreground text-center py-4">Please select a workout type or log an entry to view its trend.</p>
             )}
           </CardContent>
         </Card>
       )}
       
-      <WorkoutLogList logs={workoutLogs} />
+      <WorkoutLogList logs={workoutLogs} onWorkoutTypeSelect={setSelectedWorkoutTypeForTrend} />
     </div>
   );
 }

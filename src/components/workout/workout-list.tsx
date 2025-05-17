@@ -5,12 +5,14 @@ import type { WorkoutLog } from '@/lib/types';
 import { format } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button'; // Added for potential styling
 
 type WorkoutLogListProps = {
   logs: WorkoutLog[];
+  onWorkoutTypeSelect: (workoutType: string) => void; // New prop
 };
 
-export function WorkoutLogList({ logs }: WorkoutLogListProps) {
+export function WorkoutLogList({ logs, onWorkoutTypeSelect }: WorkoutLogListProps) {
   if (logs.length === 0) {
     return (
       <Card className="shadow-lg">
@@ -40,7 +42,7 @@ export function WorkoutLogList({ logs }: WorkoutLogListProps) {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle>Workout History</CardTitle>
-        <CardDescription>Your logged workout sessions.</CardDescription>
+        <CardDescription>Your logged workout sessions. Click on a workout type to see its trend.</CardDescription>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] pr-3">
@@ -50,7 +52,13 @@ export function WorkoutLogList({ logs }: WorkoutLogListProps) {
               <ul className="space-y-3">
                 {groupedLogs[dateStr].map((log) => (
                   <li key={log.id} className="p-3 border rounded-md bg-muted/50">
-                    <p className="font-semibold text-md">{log.workoutType}</p>
+                    <button
+                      onClick={() => onWorkoutTypeSelect(log.workoutType)}
+                      className="font-semibold text-md hover:text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded transition-colors"
+                      aria-label={`View trend for ${log.workoutType}`}
+                    >
+                      {log.workoutType}
+                    </button>
                     <div className="grid grid-cols-3 gap-2 text-sm text-muted-foreground mt-1">
                       <span>Weight: {log.weight} kg</span>
                       <span>Reps: {log.reps}</span>
