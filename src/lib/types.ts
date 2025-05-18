@@ -30,3 +30,10 @@ export interface UserProfile {
   sex?: 'male' | 'female';
   bmr?: number;
 }
+
+export interface StepLog {
+  id: string;
+  date: Date;
+  steps: number;
+  caloriesBurned?: number;
+}

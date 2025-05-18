@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Gauge, Scale, Settings, Dumbbell, Home, Activity, User } from "lucide-react"; 
+import { CalendarDays, Gauge, Scale, Settings, Dumbbell, Home, Activity, User, Footprints } from "lucide-react"; 
 import { Logo } from "@/components/icons/logo";
 import {
   Sidebar,
@@ -23,6 +23,7 @@ const navItems = [
   { href: "/fasting", icon: CalendarDays, label: "Fasting" },
   { href: "/body-metrics", icon: Activity, label: "Body Metrics" },
   { href: "/workout", icon: Dumbbell, label: "Workout" },
+  { href: "/steps", icon: Footprints, label: "Steps" },
 ];
 
 export function AppSidebar() {
