@@ -17,88 +17,88 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 220 10% 10%;
 
-    --primary: 210 90% 55%; /* Vibrant Blue */
+    --primary: 220 70% 55%; /* Bright, sharp Blue */
     --primary-foreground: 0 0% 100%; /* White for contrast on blue */
 
-    --secondary: 210 90% 90%; /* Lighter Blue */
-    --secondary-foreground: 210 90% 30%; /* Darker blue text for contrast on light blue */
+    --secondary: 220 20% 90%; /* Lighter cool gray/blue */
+    --secondary-foreground: 220 70% 30%; /* Darker blue text for contrast on light blue/gray */
 
     --muted: 220 15% 92%; /* Light Gray */
     --muted-foreground: 220 8% 45%; /* Medium Gray for muted text */
 
-    --accent: 25 95% 55%; /* Energetic Orange */
-    --accent-foreground: 0 0% 100%; /* White text on orange */
+    --accent: 150 70% 50%; /* Vibrant Cyan/Teal */
+    --accent-foreground: 220 10% 10%; /* Dark text for contrast on accent */
 
     --destructive: 0 84% 60%; /* Standard vivid red */
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 15% 88%; /* Light Gray Border */
     --input: 220 15% 94%; /* Light Gray Input Background */
-    --ring: 210 90% 60%; /* Ring color based on primary blue */
+    --ring: 220 70% 60%; /* Ring color based on primary blue */
 
     --radius: 0.5rem;
 
-    /* Sidebar specific theme for light mode (and now effectively for dark mode too) */
-    --sidebar-background: 220 25% 15%; /* Dark Blue-Gray */
-    --sidebar-foreground: 220 15% 95%;    /* White/Light Gray text on dark sidebar */
-    --sidebar-primary: 25 95% 55%;    /* Orange accent for active items in sidebar */
-    --sidebar-primary-foreground: 0 0% 100%; /* White text on active orange sidebar items */
-    --sidebar-accent: 25 95% 65%;     /* Slightly lighter orange for hover on sidebar */
+    /* Sidebar specific theme - Consistent Dark Techy Look */
+    --sidebar-background: 220 15% 12%; /* Very dark gray/charcoal */
+    --sidebar-foreground: 220 15% 90%;    /* White/Light Gray text */
+    --sidebar-primary: 220 70% 55%;    /* Primary Blue for active items */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text on active blue */
+    --sidebar-accent: 220 70% 65%;     /* Slightly lighter blue for hover */
     --sidebar-accent-foreground: 0 0% 100%; /* White text for hover accent */
-    --sidebar-border: 220 20% 25%;    /* Border color within dark sidebar */
-    --sidebar-ring: 25 95% 60%;       /* Ring color for focus within sidebar */
+    --sidebar-border: 220 10% 20%;    /* Border color within dark sidebar */
+    --sidebar-ring: 220 70% 60%;       /* Ring color for focus within sidebar */
 
-    --chart-1: 210 90% 55%; /* Primary Blue */
-    --chart-2: 25 95% 55%;  /* Accent Orange */
-    --chart-3: 180 70% 50%; /* A Teal/Cyan */
-    --chart-4: 280 70% 60%; /* A Purple */
-    --chart-5: 50 90% 55%;  /* A Yellow/Gold */
+    --chart-1: 220 70% 55%; /* Primary Blue */
+    --chart-2: 150 70% 50%;  /* Accent Cyan/Teal */
+    --chart-3: 270 70% 60%; /* A distinct Purple */
+    --chart-4: 30 80% 60%;  /* A contrasting Orange/Gold */
+    --chart-5: 100 60% 50%;  /* A muted Green */
   }
 
   .dark {
-    --background: 220 15% 8%; /* Very dark cool gray, almost black */
-    --foreground: 220 10% 92%; /* Light Gray/Off-white text */
+    --background: 220 15% 10%; /* Very dark desaturated blue */
+    --foreground: 220 10% 90%; /* Light Gray/Off-white text */
 
-    --card: 220 15% 12%; /* Slightly lighter than bg for cards */
-    --card-foreground: 220 10% 92%; /* Light text on dark cards */
+    --card: 220 15% 15%; /* Slightly lighter than bg for cards */
+    --card-foreground: 220 10% 90%; /* Light text on dark cards */
 
-    --popover: 220 15% 12%;
-    --popover-foreground: 220 10% 92%;
+    --popover: 220 15% 15%;
+    --popover-foreground: 220 10% 90%;
 
-    --primary: 210 90% 60%; /* Slightly brighter Vibrant Blue for dark mode */
+    --primary: 220 70% 60%; /* Slightly brighter Blue for dark mode */
     --primary-foreground: 0 0% 100%; /* White text for contrast on blue */
 
-    --secondary: 220 10% 25%; /* Muted dark gray for secondary elements */
+    --secondary: 220 10% 25%; /* Muted dark gray/blue for secondary elements */
     --secondary-foreground: 220 10% 80%; /* Lighter gray text on dark secondary */
 
-    --muted: 220 10% 20%; /* Darker muted gray */
+    --muted: 220 10% 20%; /* Darker muted gray/blue */
     --muted-foreground: 220 10% 65%; /* Medium-light gray for muted text */
 
-    --accent: 25 95% 60%; /* Slightly brighter Orange for accent */
-    --accent-foreground: 0 0% 100%; /* White text on accent */
+    --accent: 150 70% 55%; /* Slightly brighter Cyan/Teal for accent */
+    --accent-foreground: 0 0% 100%; /* White text on accent for dark mode */
 
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 10% 20%; /* Dark gray border */
-    --input: 220 10% 15%; /* Dark input background */
-    --ring: 210 90% 65%; /* Ring color based on primary blue */
+    --border: 220 10% 25%; /* Dark gray/blue border */
+    --input: 220 10% 20%; /* Dark input background */
+    --ring: 220 70% 65%; /* Ring color based on primary blue */
 
-    /* Sidebar specific theme - FORCED TO MATCH LIGHT MODE APPEARANCE */
-    --sidebar-background: 220 25% 15%; /* Dark Blue-Gray (from light mode) */
-    --sidebar-foreground: 220 15% 95%;    /* White/Light Gray text (from light mode) */
-    --sidebar-primary: 25 95% 55%;    /* Orange accent (from light mode) */
-    --sidebar-primary-foreground: 0 0% 100%; /* White text (from light mode) */
-    --sidebar-accent: 25 95% 65%;     /* Slightly lighter orange (from light mode) */
-    --sidebar-accent-foreground: 0 0% 100%; /* White text (from light mode) */
-    --sidebar-border: 220 20% 25%;    /* Border color (from light mode) */
-    --sidebar-ring: 25 95% 60%;       /* Ring color (from light mode) */
+    /* Sidebar specific theme - Consistent Dark Techy Look (same as :root) */
+    --sidebar-background: 220 15% 12%;
+    --sidebar-foreground: 220 15% 90%;
+    --sidebar-primary: 220 70% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 70% 65%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 220 10% 20%;
+    --sidebar-ring: 220 70% 60%;
     
-    --chart-1: 210 90% 60%; /* Brighter Blue for dark mode charts */
-    --chart-2: 25 95% 60%;  /* Brighter Orange */
-    --chart-3: 180 70% 60%; /* Brighter Teal/Cyan */
-    --chart-4: 280 70% 70%; /* Brighter Purple */
-    --chart-5: 50 90% 65%;  /* Brighter Yellow/Gold */
+    --chart-1: 220 70% 60%; /* Brighter Blue for dark mode charts */
+    --chart-2: 150 70% 55%;  /* Brighter Cyan/Teal */
+    --chart-3: 270 70% 65%; /* Brighter Purple */
+    --chart-4: 30 80% 65%;  /* Brighter Orange/Gold */
+    --chart-5: 100 60% 55%;  /* Brighter muted Green */
   }
 }
 
