@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, PlusCircle } from "lucide-react";
+import { CalendarIcon, PlusCircle, Save } from "lucide-react"; // Added Save icon
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -36,36 +36,54 @@ const formSchema = z.object({
 });
 
 type AddWorkoutLogFormProps = {
-  onAddLog: (log: Omit<WorkoutLog, "id">) => void;
+  onSaveLog: (log: Omit<WorkoutLog, "id"> | WorkoutLog) => void; // Modified to accept full log for updates
+  logToEdit: WorkoutLog | null;
+  onCancelEdit: () => void; // Added to allow canceling an edit
 };
 
-export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
+const defaultFormValues = {
+  date: new Date(),
+  workoutType: "",
+  weight: "" as unknown as number,
+  reps: "" as unknown as number,
+  sets: "" as unknown as number,
+};
+
+export function AddWorkoutLogForm({ onSaveLog, logToEdit, onCancelEdit }: AddWorkoutLogFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      date: new Date(),
-      workoutType: "",
-      weight: "" as unknown as number, // Keep it controlled with empty string
-      reps: "" as unknown as number,   // Keep it controlled with empty string
-      sets: "" as unknown as number,   // Keep it controlled with empty string
-    },
+    defaultValues: defaultFormValues,
   });
 
+  React.useEffect(() => {
+    if (logToEdit) {
+      form.reset({
+        date: new Date(logToEdit.date), // Ensure date is a new Date object
+        workoutType: logToEdit.workoutType,
+        weight: logToEdit.weight,
+        reps: logToEdit.reps,
+        sets: logToEdit.sets,
+      });
+    } else {
+      form.reset(defaultFormValues);
+    }
+  }, [logToEdit, form]);
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    onAddLog(values);
-    form.reset({
-      date: new Date(),
-      workoutType: "",
-      weight: "" as unknown as number,
-      reps: "" as unknown as number,
-      sets: "" as unknown as number,
-    });
+    if (logToEdit) {
+      onSaveLog({ ...logToEdit, ...values }); // Pass the full log with ID for update
+    } else {
+      onSaveLog(values); // Pass new log data
+    }
+    // Resetting to default is handled by parent setting logToEdit to null, which triggers useEffect
   }
+  
+  const isEditing = !!logToEdit;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-4 border rounded-lg shadow-sm bg-card">
-        <h3 className="text-lg font-semibold text-card-foreground">Add New Workout Entry</h3>
+        <h3 className="text-lg font-semibold text-card-foreground">{isEditing ? "Edit Workout Entry" : "Add New Workout Entry"}</h3>
         <FormField
           control={form.control}
           name="date"
@@ -95,7 +113,7 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => field.onChange(date || new Date())}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01")
                     }
@@ -128,7 +146,7 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
               <FormItem>
                 <FormLabel>Weight (KG)</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.1" placeholder="e.g., 50" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />
+                  <Input type="number" step="0.1" placeholder="e.g., 50" {...field} value={field.value === undefined ? '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,7 +159,7 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
               <FormItem>
                 <FormLabel>Reps (per set)</FormLabel>
                 <FormControl>
-                  <Input type="number" step="1" placeholder="e.g., 10" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
+                  <Input type="number" step="1" placeholder="e.g., 10" {...field} value={field.value === undefined ? '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -154,16 +172,24 @@ export function AddWorkoutLogForm({ onAddLog }: AddWorkoutLogFormProps) {
               <FormItem>
                 <FormLabel>Sets</FormLabel>
                 <FormControl>
-                  <Input type="number" step="1" placeholder="e.g., 3" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
+                  <Input type="number" step="1" placeholder="e.g., 3" {...field} value={field.value === undefined ? '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-        <Button type="submit" className="w-full md:w-auto">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Workout Log
-        </Button>
+        <div className="flex space-x-2">
+            <Button type="submit" className="w-full md:w-auto">
+            {isEditing ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+            {isEditing ? "Update Workout Log" : "Add Workout Log"}
+            </Button>
+            {isEditing && (
+            <Button type="button" variant="outline" onClick={onCancelEdit} className="w-full md:w-auto">
+                Cancel Edit
+            </Button>
+            )}
+        </div>
       </form>
     </Form>
   );

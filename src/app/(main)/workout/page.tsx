@@ -15,6 +15,7 @@ export default function WorkoutPage() {
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [selectedWorkoutTypeForTrend, setSelectedWorkoutTypeForTrend] = useState<string | null>(null);
+  const [editingLog, setEditingLog] = useState<WorkoutLog | null>(null); // State for the log being edited
 
   useEffect(() => {
     setIsClient(true);
@@ -34,7 +35,6 @@ export default function WorkoutPage() {
           }) as WorkoutLog[];
         } catch (error) {
           console.error("Failed to parse workout logs from localStorage", error);
-          // parsedLogs remains initialLogs
         }
       }
       
@@ -53,7 +53,7 @@ export default function WorkoutPage() {
         }
       }
     }
-  }, [isClient]); // selectedWorkoutTypeForTrend removed from deps to avoid loop, it's set here or by user
+  }, [isClient]);
 
   useEffect(() => {
     if (isClient) {
@@ -61,22 +61,41 @@ export default function WorkoutPage() {
     }
   }, [workoutLogs, isClient]);
 
-  const handleAddLog = (newLogData: Omit<WorkoutLog, 'id'>) => {
-    const newLog: WorkoutLog = {
-      ...newLogData,
-      id: Date.now().toString(),
-    };
+  const handleSaveLog = (logData: Omit<WorkoutLog, "id"> | WorkoutLog) => {
     setWorkoutLogs(prevLogs => {
-      const updatedLogs = [newLog, ...prevLogs];
+      let updatedLogs;
+      if ('id' in logData && editingLog && logData.id === editingLog.id) { // Check if it's an update
+        updatedLogs = prevLogs.map(log => 
+          log.id === logData.id ? { ...log, ...logData, date: new Date(logData.date) } : log // Ensure date is Date object
+        );
+      } else { // It's a new log
+        const newLog: WorkoutLog = {
+          ...(logData as Omit<WorkoutLog, "id'>), // Cast to exclude id initially
+          id: Date.now().toString(),
+          date: new Date(logData.date), // Ensure date is Date object
+        };
+        updatedLogs = [newLog, ...prevLogs];
+      }
+      
       const sorted = updatedLogs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       
-      // If this is the first log of a new type, or no trend is selected, select it.
       const currentUniqueTypes = Array.from(new Set(sorted.map(log => log.workoutType).filter(Boolean)));
-      if (!selectedWorkoutTypeForTrend || !currentUniqueTypes.includes(newLog.workoutType)) {
-        setSelectedWorkoutTypeForTrend(newLog.workoutType);
+      if ((!selectedWorkoutTypeForTrend && logData.workoutType) || (logData.workoutType && !currentUniqueTypes.includes(logData.workoutType))) {
+        setSelectedWorkoutTypeForTrend(logData.workoutType);
       }
+      
+      setEditingLog(null); // Clear editing state
       return sorted;
     });
+  };
+
+  const handleEditRequest = (log: WorkoutLog) => {
+    setEditingLog(log);
+    // Scroll to form or highlight it if necessary - for now, just sets state
+  };
+
+  const handleCancelEdit = () => {
+    setEditingLog(null);
   };
 
   const uniqueWorkoutTypes = useMemo(() => {
@@ -92,17 +111,21 @@ export default function WorkoutPage() {
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="text-3xl font-bold tracking-tight">Workout Tracker</CardTitle>
-          <CardDescription>Log your workouts, track your progress, and view trends.</CardDescription>
+          <CardDescription>Log your workouts, track your progress, and view trends. Edit entries by clicking the edit icon in the history.</CardDescription>
         </CardHeader>
       </Card>
       
-      <AddWorkoutLogForm onAddLog={handleAddLog} />
+      <AddWorkoutLogForm 
+        onSaveLog={handleSaveLog} 
+        logToEdit={editingLog} 
+        onCancelEdit={handleCancelEdit} 
+      />
       
       {uniqueWorkoutTypes.length > 0 && (
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>Workout Progression</CardTitle>
-            <CardDescription>Select a workout type to see how your weight lifted has progressed over time. You can also click on a workout type in the history below.</CardDescription>
+            <CardDescription>Select a workout type to see how your total volume has progressed over time. You can also click on a workout type in the history below.</CardDescription>
           </CardHeader>
           <CardContent>
             <Select
@@ -131,7 +154,11 @@ export default function WorkoutPage() {
         </Card>
       )}
       
-      <WorkoutLogList logs={workoutLogs} onWorkoutTypeSelect={setSelectedWorkoutTypeForTrend} />
+      <WorkoutLogList 
+        logs={workoutLogs} 
+        onWorkoutTypeSelect={setSelectedWorkoutTypeForTrend}
+        onEditLogRequest={handleEditRequest} 
+      />
     </div>
   );
 }
