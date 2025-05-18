@@ -39,7 +39,7 @@ type AddWorkoutLogFormProps = {
   onSaveLog: (log: Omit<WorkoutLog, "id"> | WorkoutLog) => void; 
   logToEdit: WorkoutLog | null;
   onCancelEdit: () => void; 
-  workoutTypeSuggestions?: string[]; // Added prop for suggestions
+  workoutTypeSuggestions?: string[];
 };
 
 const defaultFormValues = {
@@ -194,7 +194,7 @@ export function AddWorkoutLogForm({ onSaveLog, logToEdit, onCancelEdit, workoutT
           />
         </div>
         <div className="flex space-x-2">
-            <Button type="submit" className="w-full md:w-auto">
+            <Button type="submit" variant="accent" className="w-full md:w-auto">
             {isEditing ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />}
             {isEditing ? "Update Workout Log" : "Add Workout Log"}
             </Button>
