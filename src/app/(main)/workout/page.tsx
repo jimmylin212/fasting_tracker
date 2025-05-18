@@ -53,7 +53,7 @@ export default function WorkoutPage() {
         }
       }
     }
-  }, [isClient]);
+  }, [isClient, selectedWorkoutTypeForTrend]); // Added selectedWorkoutTypeForTrend to dependencies to avoid stale closure issues if logic depends on it.
 
   useEffect(() => {
     if (isClient) {
@@ -70,7 +70,7 @@ export default function WorkoutPage() {
         );
       } else { // It's a new log
         const newLog: WorkoutLog = {
-          ...(logData as Omit<WorkoutLog, "id'>), // Cast to exclude id initially
+          ...(logData as Omit<WorkoutLog, "id">), // Cast to exclude id initially
           id: Date.now().toString(),
           date: new Date(logData.date), // Ensure date is Date object
         };
