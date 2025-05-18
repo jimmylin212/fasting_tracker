@@ -201,8 +201,6 @@ export default function HomePage() {
       const updateTimers = () => {
         const now = new Date();
         if (currentFast.endTime && isBefore(currentFast.endTime as Date, now)) {
-          // Fast has ended, find it in logs and then set currentFast to null
-          // This ensures we are comparing with the potentially updated log from localStorage
           const stillActiveFast = fastingLogs.find(log => log.id === currentFast.id && log.endTime && isAfter(log.endTime, now));
           if (!stillActiveFast) {
             setCurrentFast(null); 
@@ -211,16 +209,41 @@ export default function HomePage() {
           setElapsedHours(0);
           setCurrentStage(null);
         } else if (currentFast.startTime) {
-          const seconds = differenceInSeconds(now, currentFast.startTime as Date);
-          setElapsedTime(`${seconds} seconds`);
+          const totalSeconds = differenceInSeconds(now, currentFast.startTime as Date);
           
-          const hours = differenceInHours(now, currentFast.startTime as Date);
-          setElapsedHours(hours);
-          setCurrentStage(getCurrentFastingStage(hours));
+          if (totalSeconds < 0) { // Should not happen if fast is correctly identified as active
+            setElapsedTime("Calculating...");
+            setElapsedHours(0);
+            setCurrentStage(null);
+            return;
+          }
+
+          const h = Math.floor(totalSeconds / 3600);
+          const m = Math.floor((totalSeconds % 3600) / 60);
+          const s = totalSeconds % 60;
+
+          let displayString = "";
+          if (h > 0) {
+            displayString += `${h} hour${h !== 1 ? 's' : ''} `;
+          }
+          if (m > 0 || h > 0) { // Show minutes if m > 0 or if h > 0 (to show 0 minutes in cases like "1 hour 0 minutes 5 seconds")
+            displayString += `${m} minute${m !== 1 ? 's' : ''} `;
+          }
+          // Always show seconds part unless totalSeconds is 0 and no h/m (handled by initial "0 seconds")
+          if (totalSeconds === 0 && h === 0 && m === 0) {
+             displayString = "0 seconds";
+          } else {
+             displayString += `${s} second${s !== 1 ? 's' : ''}`;
+          }
+          setElapsedTime(displayString.trim());
+          
+          const hoursForStage = differenceInHours(now, currentFast.startTime as Date);
+          setElapsedHours(hoursForStage);
+          setCurrentStage(getCurrentFastingStage(hoursForStage));
         }
       };
       updateTimers(); 
-      interval = setInterval(updateTimers, 1000); // Update every second for elapsed time
+      interval = setInterval(updateTimers, 1000); 
     } else {
       setElapsedTime("0 seconds");
       setElapsedHours(0);
@@ -357,5 +380,7 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
 
     
