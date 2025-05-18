@@ -204,7 +204,7 @@ export function AddFastingLogForm({ onAddLog }: AddFastingLogFormProps) {
               </FormItem>
             )}
           />
-        <Button type="submit" className="w-full md:w-auto">
+        <Button type="submit" variant="accent" className="w-full md:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" /> Add Fasting Log
         </Button>
       </form>

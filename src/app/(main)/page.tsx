@@ -352,7 +352,7 @@ export default function HomePage() {
               <PlayCircle className="h-16 w-16 mx-auto text-gray-400" />
               <p className="text-xl font-semibold">You are not currently fasting.</p>
               <p className="text-muted-foreground">Ready to start your next fast?</p>
-              <Button onClick={handleStartFast} className="w-full">
+              <Button onClick={handleStartFast} variant="accent" className="w-full">
                 <PlayCircle className="mr-2 h-5 w-5" /> Start 16-Hour Fast Now
               </Button>
             </>
@@ -380,7 +380,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
-
-    

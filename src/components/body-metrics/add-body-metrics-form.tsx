@@ -155,7 +155,7 @@ export function AddBodyMetricsForm({ onAddLog }: AddBodyMetricsFormProps) {
                 )}
             />
         </div>
-        <Button type="submit" className="w-full md:w-auto">
+        <Button type="submit" variant="accent" className="w-full md:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" /> Add Body Metrics Log
         </Button>
       </form>

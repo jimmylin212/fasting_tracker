@@ -190,7 +190,7 @@ export function ProfileForm({ initialData, onSave }: ProfileFormProps) {
               </Card>
             )}
             
-            <Button type="submit" className="w-full md:w-auto">
+            <Button type="submit" variant="accent" className="w-full md:w-auto">
               <Save className="mr-2 h-4 w-4" /> Save Profile
             </Button>
           </form>
