@@ -23,25 +23,46 @@ interface FastingStage {
 
 const fastingStages: FastingStage[] = [
   {
-    name: "Glucose Burning",
+    name: "Fed State / Digestion",
     minHours: 0,
+    maxHours: 4,
+    icon: Zap,
+    description: "Body digesting and absorbing nutrients from your last meal.",
+    details: [
+      "Blood glucose rises as food is broken down.",
+      "Insulin is released to help cells absorb glucose for energy or storage."
+    ]
+  },
+  {
+    name: "Post-Absorptive / Early Glycogenolysis",
+    minHours: 4,
+    maxHours: 8,
+    icon: Zap,
+    description: "Blood sugar and insulin levels begin to fall as absorbed glucose is used.",
+    details: [
+      "Glucagon signals the liver to start breaking down stored glycogen.",
+      "Body transitions from using meal-derived glucose to stored glucose."
+    ]
+  },
+  {
+    name: "Late Glycogenolysis / Gluconeogenesis Ramping Up",
+    minHours: 8,
     maxHours: 12,
     icon: Zap,
-    description: "Body using up last meal's glucose.",
+    description: "Liver glycogen stores significantly deplete. Body produces new glucose.",
     details: [
-      "Blood sugar rises, then falls.",
-      "Insulin guides glucose into cells.",
-      "Stored glycogen starts to deplete."
+      "Gluconeogenesis (creating new glucose from non-carb sources) increases.",
+      "Body prepares for fat metabolism if fasting continues."
     ]
   },
   {
     name: "Early Fat Burning & Ketosis",
     minHours: 12,
     maxHours: 18,
-    icon: Zap,
-    description: "Glycogen low, fat breakdown (lipolysis) begins.",
+    icon: Zap, // Icon represents energy shift
+    description: "Glycogen low, fat breakdown (lipolysis) increases. Ketone production may start.",
     details: [
-      "Ketone production may start.",
+      "Ketones (alternative fuel) begin to form.",
       "Autophagy (cellular cleanup) processes initiate."
     ]
   },
@@ -114,7 +135,7 @@ const getCurrentFastingStage = (elapsedHours: number): FastingStage | null => {
   if (elapsedHours >= fastingStages[fastingStages.length - 1].minHours && fastingStages[fastingStages.length-1].maxHours === undefined) {
       return fastingStages[fastingStages.length - 1];
   }
-  return fastingStages[0]; // Default to first stage if something is off, though logic above should cover.
+  return fastingStages[0]; // Default to first stage if something is off
 };
 
 
@@ -180,7 +201,12 @@ export default function HomePage() {
       const updateTimers = () => {
         const now = new Date();
         if (currentFast.endTime && isBefore(currentFast.endTime as Date, now)) {
-          setCurrentFast(null); 
+          // Fast has ended, find it in logs and then set currentFast to null
+          // This ensures we are comparing with the potentially updated log from localStorage
+          const stillActiveFast = fastingLogs.find(log => log.id === currentFast.id && log.endTime && isAfter(log.endTime, now));
+          if (!stillActiveFast) {
+            setCurrentFast(null); 
+          }
           setElapsedTime("0 seconds");
           setElapsedHours(0);
           setCurrentStage(null);
@@ -201,7 +227,7 @@ export default function HomePage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [currentFast, isClient]);
+  }, [currentFast, isClient, fastingLogs]); // Added fastingLogs dependency
 
   const handleStartFast = () => {
     const now = new Date();
@@ -225,6 +251,7 @@ export default function HomePage() {
           log.id === currentFast.id ? { ...log, endTime: now } : log
         ).sort((a, b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime())
       );
+      // No need to set currentFast to null here, the useEffect [fastingLogs, isClient] will handle it
     }
   };
   
@@ -330,3 +357,5 @@ export default function HomePage() {
   );
 }
 
+
+    
