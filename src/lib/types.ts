@@ -6,8 +6,6 @@ export interface FastingLog {
   notes?: string;
 }
 
-// Removed old WeightLog and FatLog interfaces
-
 export interface BodyMetricsLog {
   id: string;
   date: Date;
@@ -23,4 +21,12 @@ export interface WorkoutLog {
   weight: number; // KG
   reps: number;
   sets: number;
+}
+
+export interface UserProfile {
+  age?: number;
+  height?: number; // cm
+  weight?: number; // kg (for BMR calculation)
+  sex?: 'male' | 'female';
+  bmr?: number;
 }

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Gauge, Scale, Settings, Dumbbell, Home, Activity } from "lucide-react"; 
+import { CalendarDays, Gauge, Scale, Settings, Dumbbell, Home, Activity, User } from "lucide-react"; 
 import { Logo } from "@/components/icons/logo";
 import {
   Sidebar,
@@ -19,8 +19,9 @@ import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { href: "/", icon: Home, label: "Home" },
+  { href: "/profile", icon: User, label: "Profile" },
   { href: "/fasting", icon: CalendarDays, label: "Fasting" },
-  { href: "/body-metrics", icon: Activity, label: "Body Metrics" }, // Updated
+  { href: "/body-metrics", icon: Activity, label: "Body Metrics" },
   { href: "/workout", icon: Dumbbell, label: "Workout" },
 ];
 
@@ -43,7 +44,7 @@ export function AppSidebar() {
               <Link href={item.href} legacyBehavior passHref>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href || (item.href === "/body-metrics" && (pathname === "/weight" || pathname === "/fat"))} // Handle old paths if necessary during transition
+                  isActive={pathname === item.href || (item.href === "/body-metrics" && (pathname === "/weight" || pathname === "/fat"))}
                   tooltip={item.label}
                 >
                   <a>
