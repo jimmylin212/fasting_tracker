@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, PlusCircle, Save } from "lucide-react"; // Added Save icon
+import { CalendarIcon, PlusCircle, Save } from "lucide-react"; 
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -36,9 +36,10 @@ const formSchema = z.object({
 });
 
 type AddWorkoutLogFormProps = {
-  onSaveLog: (log: Omit<WorkoutLog, "id"> | WorkoutLog) => void; // Modified to accept full log for updates
+  onSaveLog: (log: Omit<WorkoutLog, "id"> | WorkoutLog) => void; 
   logToEdit: WorkoutLog | null;
-  onCancelEdit: () => void; // Added to allow canceling an edit
+  onCancelEdit: () => void; 
+  workoutTypeSuggestions?: string[]; // Added prop for suggestions
 };
 
 const defaultFormValues = {
@@ -49,7 +50,7 @@ const defaultFormValues = {
   sets: "" as unknown as number,
 };
 
-export function AddWorkoutLogForm({ onSaveLog, logToEdit, onCancelEdit }: AddWorkoutLogFormProps) {
+export function AddWorkoutLogForm({ onSaveLog, logToEdit, onCancelEdit, workoutTypeSuggestions = [] }: AddWorkoutLogFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
@@ -58,7 +59,7 @@ export function AddWorkoutLogForm({ onSaveLog, logToEdit, onCancelEdit }: AddWor
   React.useEffect(() => {
     if (logToEdit) {
       form.reset({
-        date: new Date(logToEdit.date), // Ensure date is a new Date object
+        date: new Date(logToEdit.date), 
         workoutType: logToEdit.workoutType,
         weight: logToEdit.weight,
         reps: logToEdit.reps,
@@ -71,14 +72,15 @@ export function AddWorkoutLogForm({ onSaveLog, logToEdit, onCancelEdit }: AddWor
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (logToEdit) {
-      onSaveLog({ ...logToEdit, ...values }); // Pass the full log with ID for update
+      onSaveLog({ ...logToEdit, ...values }); 
     } else {
-      onSaveLog(values); // Pass new log data
+      onSaveLog(values); 
     }
-    // Resetting to default is handled by parent setting logToEdit to null, which triggers useEffect
   }
   
   const isEditing = !!logToEdit;
+  const workoutTypeInputId = React.useId();
+
 
   return (
     <Form {...form}>
@@ -131,10 +133,22 @@ export function AddWorkoutLogForm({ onSaveLog, logToEdit, onCancelEdit }: AddWor
             name="workoutType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Workout Type</FormLabel>
+                <FormLabel htmlFor={workoutTypeInputId}>Workout Type</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Bench Press, Squat" {...field} />
+                  <Input 
+                    id={workoutTypeInputId}
+                    placeholder="e.g., Bench Press, Squat" 
+                    {...field} 
+                    list={`${workoutTypeInputId}-suggestions`}
+                  />
                 </FormControl>
+                {workoutTypeSuggestions.length > 0 && (
+                  <datalist id={`${workoutTypeInputId}-suggestions`}>
+                    {workoutTypeSuggestions.map(suggestion => (
+                      <option key={suggestion} value={suggestion} />
+                    ))}
+                  </datalist>
+                )}
                 <FormMessage />
               </FormItem>
             )}

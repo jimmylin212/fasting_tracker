@@ -8,6 +8,7 @@ import type { WorkoutLog } from '@/lib/types';
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkoutTrendChart } from '@/components/workout/workout-trend-chart';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const initialLogs: WorkoutLog[] = [];
 
@@ -53,7 +54,7 @@ export default function WorkoutPage() {
         }
       }
     }
-  }, [isClient, selectedWorkoutTypeForTrend]); // Added selectedWorkoutTypeForTrend to dependencies to avoid stale closure issues if logic depends on it.
+  }, [isClient]); // Removed selectedWorkoutTypeForTrend from here, it will be derived
 
   useEffect(() => {
     if (isClient) {
@@ -70,7 +71,7 @@ export default function WorkoutPage() {
         );
       } else { // It's a new log
         const newLog: WorkoutLog = {
-          ...(logData as Omit<WorkoutLog, "id">), // Cast to exclude id initially
+          ...(logData as Omit<WorkoutLog, "id">), 
           id: Date.now().toString(),
           date: new Date(logData.date), // Ensure date is Date object
         };
@@ -79,9 +80,15 @@ export default function WorkoutPage() {
       
       const sorted = updatedLogs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       
+      // Update selectedWorkoutTypeForTrend if the new/edited log's type makes sense to select
       const currentUniqueTypes = Array.from(new Set(sorted.map(log => log.workoutType).filter(Boolean)));
-      if ((!selectedWorkoutTypeForTrend && logData.workoutType) || (logData.workoutType && !currentUniqueTypes.includes(logData.workoutType))) {
+      if (logData.workoutType && (!selectedWorkoutTypeForTrend || !currentUniqueTypes.includes(selectedWorkoutTypeForTrend))) {
         setSelectedWorkoutTypeForTrend(logData.workoutType);
+      } else if (!logData.workoutType && selectedWorkoutTypeForTrend && !currentUniqueTypes.includes(selectedWorkoutTypeForTrend) && currentUniqueTypes.length > 0) {
+        // If current selection is removed and others exist, pick the first available
+        setSelectedWorkoutTypeForTrend(currentUniqueTypes[0]);
+      } else if (currentUniqueTypes.length === 0) {
+        setSelectedWorkoutTypeForTrend(null);
       }
       
       setEditingLog(null); // Clear editing state
@@ -91,7 +98,6 @@ export default function WorkoutPage() {
 
   const handleEditRequest = (log: WorkoutLog) => {
     setEditingLog(log);
-    // Scroll to form or highlight it if necessary - for now, just sets state
   };
 
   const handleCancelEdit = () => {
@@ -102,8 +108,23 @@ export default function WorkoutPage() {
     return Array.from(new Set(workoutLogs.map(log => log.workoutType).filter(Boolean))).sort();
   }, [workoutLogs]);
 
+  // Effect to set initial selectedWorkoutTypeForTrend if it's null and uniqueWorkoutTypes is populated
+  useEffect(() => {
+    if (!selectedWorkoutTypeForTrend && uniqueWorkoutTypes.length > 0) {
+      setSelectedWorkoutTypeForTrend(uniqueWorkoutTypes[0]);
+    }
+  }, [uniqueWorkoutTypes, selectedWorkoutTypeForTrend]);
+
+
   if (!isClient) {
-    return <div className="flex justify-center items-center h-screen"><p>Loading tracker...</p></div>;
+    // Basic skeleton for initial loading
+    return (
+      <div className="space-y-8">
+        <Card className="shadow-xl"><CardHeader><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-3/4 mt-2" /></CardHeader></Card>
+        <Skeleton className="h-72 w-full" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
   }
 
   return (
@@ -118,7 +139,8 @@ export default function WorkoutPage() {
       <AddWorkoutLogForm 
         onSaveLog={handleSaveLog} 
         logToEdit={editingLog} 
-        onCancelEdit={handleCancelEdit} 
+        onCancelEdit={handleCancelEdit}
+        workoutTypeSuggestions={uniqueWorkoutTypes}
       />
       
       {uniqueWorkoutTypes.length > 0 && (
