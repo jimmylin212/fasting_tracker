@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { FastingLog } from '@/lib/types';
 import { format, formatDistanceStrict, addHours, isAfter, isBefore, isValid } from 'date-fns';
-import { Hourglass, PlayCircle, StopCircle, CalendarDays } from 'lucide-react';
+import { Hourglass, PlayCircle, StopCircle, CalendarDays, Edit3 } from 'lucide-react'; // Added Edit3
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function HomePage() {
@@ -16,12 +16,10 @@ export default function HomePage() {
   const [elapsedTime, setElapsedTime] = useState<string>("0 seconds");
   const [isClient, setIsClient] = useState(false);
   
-  // Effect to run once on component mount to set isClient
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Load all logs from localStorage when isClient becomes true
   useEffect(() => {
     if (isClient) {
       const storedLogs = localStorage.getItem('fastingLogs');
@@ -30,7 +28,7 @@ export default function HomePage() {
           const parsedLogs = JSON.parse(storedLogs, (key, value) => {
             if (key === 'startTime' || key === 'endTime') {
               const date = new Date(value);
-              return isValid(date) ? date : null; // Ensure dates are valid
+              return isValid(date) ? date : null;
             }
             return value;
           }) as FastingLog[];
@@ -45,43 +43,35 @@ export default function HomePage() {
     }
   }, [isClient]);
 
-  // Save all logs to localStorage when fastingLogs state changes
   useEffect(() => {
     if (isClient) {
       localStorage.setItem('fastingLogs', JSON.stringify(fastingLogs));
     }
   }, [fastingLogs, isClient]);
 
-  // Determine current fast from loaded logs
   useEffect(() => {
     if (!isClient) return;
 
     const now = new Date();
-    let activeFast: FastingLog | null = null;
-    // Find the first log that is currently active (startTime is past, endTime is future)
-    // This assumes logs are sorted with most recent startTime first, or we find the most relevant one.
-    // For simplicity, let's find any log that is currently "active" based on its start/end times.
-    // A more robust solution might ensure only one "current" fast can exist or take the latest one.
-    for (const log of fastingLogs) {
-      if (log.startTime && isBefore(log.startTime as Date, now) && 
-          log.endTime && isAfter(log.endTime as Date, now)) {
-        activeFast = log;
-        break; 
-      }
-    }
-    setCurrentFast(activeFast);
-  }, [fastingLogs, isClient]); // Re-evaluate when fastingLogs change or client status changes
+    // Find the most recent log where startTime is in the past and endTime is in the future.
+    // This assumes logs are sorted with newest startTime first.
+    const activeFast = fastingLogs.find(log => {
+      if (!log.startTime || !log.endTime) return false;
+      const startTime = log.startTime as Date;
+      const endTime = log.endTime as Date;
+      return isBefore(startTime, now) && isAfter(endTime, now);
+    });
+    
+    setCurrentFast(activeFast || null);
 
-  // Timer for elapsed time
+  }, [fastingLogs, isClient]); 
+
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined = undefined;
     if (currentFast && currentFast.startTime && isClient) {
       const updateElapsedTime = () => {
         const now = new Date();
         if (currentFast.endTime && isBefore(currentFast.endTime as Date, now)) {
-          // Fast has ended, clear currentFast which will stop the timer.
-          // The useEffect watching fastingLogs will handle this if endTime was updated.
-          // This handles cases where time naturally passes the endTime.
           setCurrentFast(null); 
           setElapsedTime("0 seconds");
         } else if (currentFast.startTime) {
@@ -103,13 +93,11 @@ export default function HomePage() {
     const newFast: FastingLog = {
       id: Date.now().toString(),
       startTime: now,
-      endTime: addHours(now, 16), // Default 16-hour fast
+      endTime: addHours(now, 16), 
       notes: "Started from home page",
     };
-    // Add new fast and update currentFast state immediately
     setFastingLogs(prevLogs => {
         const updatedLogs = [newFast, ...prevLogs].sort((a,b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime());
-        // setCurrentFast(newFast); // This line is actually handled by the useEffect that watches fastingLogs
         return updatedLogs;
     });
   };
@@ -122,7 +110,6 @@ export default function HomePage() {
           log.id === currentFast.id ? { ...log, endTime: now } : log
         ).sort((a, b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime())
       );
-      // currentFast state will update via the useEffect that watches fastingLogs
     }
   };
   
@@ -139,6 +126,7 @@ export default function HomePage() {
             <Skeleton className="h-6 w-1/2 mx-auto" />
             <Skeleton className="h-4 w-3/4 mx-auto" />
             <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full mt-2" />
             <Skeleton className="h-10 w-full mt-2" />
           </CardContent>
         </Card>
@@ -172,6 +160,11 @@ export default function HomePage() {
               <Button onClick={handleEndFastNow} variant="destructive" className="w-full">
                 <StopCircle className="mr-2 h-5 w-5" /> End Fast Now
               </Button>
+              <Button variant="secondary" className="w-full mt-2" asChild>
+                <Link href="/fasting">
+                  <Edit3 className="mr-2 h-5 w-5" /> Edit Current Fast / View Logs
+                </Link>
+              </Button>
             </>
           ) : (
             <>
@@ -185,7 +178,7 @@ export default function HomePage() {
           )}
           <Button variant="outline" className="w-full mt-2" asChild>
             <Link href="/fasting">
-              <CalendarDays className="mr-2 h-5 w-5" /> View Fasting Logs & Calendar
+              <CalendarDays className="mr-2 h-5 w-5" /> View All Fasting Logs & Calendar
             </Link>
           </Button>
         </CardContent>

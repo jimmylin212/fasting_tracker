@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Gauge, Scale, Settings, Dumbbell, Home } from "lucide-react"; // LogOut removed
+import { CalendarDays, Gauge, Scale, Settings, Dumbbell, Home, Activity } from "lucide-react"; 
 import { Logo } from "@/components/icons/logo";
 import {
   Sidebar,
@@ -16,28 +16,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-// import { useAuth } from "@/hooks/use-auth"; // Removed
-// import { Button } from "../ui/button"; // Removed
 
 const navItems = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/fasting", icon: CalendarDays, label: "Fasting" },
-  { href: "/weight", icon: Scale, label: "Weight" },
-  { href: "/fat", icon: Gauge, label: "Body Fat" },
+  { href: "/body-metrics", icon: Activity, label: "Body Metrics" }, // Updated
   { href: "/workout", icon: Dumbbell, label: "Workout" },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
-  // const { logout, currentUser } = useAuth(); // Removed
-
-  // const handleLogout = async () => { // Removed
-  //   await logout();
-  // };
-
-  // if (!currentUser) { // Removed
-  //   return null; 
-  // }
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
@@ -55,7 +43,7 @@ export function AppSidebar() {
               <Link href={item.href} legacyBehavior passHref>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href}
+                  isActive={pathname === item.href || (item.href === "/body-metrics" && (pathname === "/weight" || pathname === "/fat"))} // Handle old paths if necessary during transition
                   tooltip={item.label}
                 >
                   <a>
@@ -77,7 +65,6 @@ export function AppSidebar() {
                     <span>Settings</span>
                 </SidebarMenuButton>
             </SidebarMenuItem> */}
-            {/* Logout button removed */}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

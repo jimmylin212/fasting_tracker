@@ -6,16 +6,14 @@ export interface FastingLog {
   notes?: string;
 }
 
-export interface WeightLog {
-  id: string;
-  date: Date;
-  weight: number; // in kg or lbs, user context dependent
-}
+// Removed old WeightLog and FatLog interfaces
 
-export interface FatLog {
+export interface BodyMetricsLog {
   id: string;
   date: Date;
-  fatPercentage: number; // as a percentage value
+  weight: number; // in kg
+  fatPercentage?: number; // as a percentage value
+  skeletalMuscleMassPercentage?: number; // as a percentage value
 }
 
 export interface WorkoutLog {
