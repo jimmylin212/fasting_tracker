@@ -8,97 +8,98 @@ body {
 
 @layer base {
   :root {
-    --background: 100 20% 97%; /* Very light, slightly warm off-white */
-    --foreground: 100 10% 25%; /* Dark, muted earthy brown/gray */
+    --background: 220 20% 98%; /* Very light cool gray */
+    --foreground: 220 10% 20%; /* Dark cool gray */
 
-    --card: 0 0% 100%; /* Clean white for cards */
-    --card-foreground: 100 10% 25%; /* Dark, muted earthy brown/gray text on cards */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 220 10% 20%; /* Dark cool gray */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 100 10% 25%;
+    --popover-foreground: 220 10% 20%;
 
-    --primary: 160 50% 45%; /* Muted Teal/Green */
-    --primary-foreground: 100 20% 97%; /* Light off-white for contrast on primary */
+    --primary: 220 70% 55%; /* Bright, sharp Blue */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 100 15% 90%; /* Lighter warm gray */
-    --secondary-foreground: 160 40% 30%; /* Darker teal/green text for contrast on light secondary */
+    --secondary: 220 15% 92%; /* Light cool gray */
+    --secondary-foreground: 220 60% 35%; /* Darker blue for contrast */
 
-    --muted: 100 15% 92%; /* Light muted Gray */
-    --muted-foreground: 100 10% 45%; /* Medium muted Gray for muted text */
+    --muted: 220 15% 94%; /* Very light cool gray, slightly darker than background */
+    --muted-foreground: 220 10% 45%; /* Medium cool gray for muted text */
 
-    --accent: 30 70% 60%; /* Soft Terracotta/Orange */
-    --accent-foreground: 30 10% 10%; /* Dark brown for contrast on accent */
+    --accent: 180 60% 45%; /* Vibrant Cyan/Teal */
+    --accent-foreground: 180 100% 10%; /* Very dark teal/black for contrast */
 
-    --destructive: 0 60% 50%; /* Muted red */
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 70% 60%; /* Muted red */
+    --destructive-foreground: 0 0% 100%; /* White */
 
-    --border: 100 15% 85%; /* Soft, warm Gray Border */
-    --input: 100 20% 93%; /* Light warm Gray Input Background */
-    --ring: 160 50% 50%; /* Ring color based on primary teal/green */
+    --border: 220 15% 88%; /* Light cool gray Border */
+    --input: 220 20% 96%; /* Light cool gray Input Background */
+    --ring: 220 70% 55%; /* Ring color based on primary blue */
 
     --radius: 0.5rem;
 
-    /* Sidebar specific theme - Serene & Natural */
-    --sidebar-background: 160 45% 30%;      /* Deeper Muted Teal/Green */
-    --sidebar-foreground: 100 20% 95%;        /* Very light off-white text */
-    --sidebar-primary: 30 70% 60%;         /* Soft Terracotta/Orange for active items */
-    --sidebar-primary-foreground: 30 10% 10%; /* Dark brown text on active terracotta */
-    --sidebar-accent: 30 70% 70%;          /* Lighter Terracotta for hover */
-    --sidebar-accent-foreground: 30 10% 10%; /* Dark brown text for hover accent */
-    --sidebar-border: 160 40% 20%;         /* Border color within sidebar */
-    --sidebar-ring: 30 70% 65%;            /* Ring color for focus within sidebar */
+    /* Sidebar specific theme - Techy Light */
+    --sidebar-background: 220 15% 95%;      /* Light cool gray for sidebar */
+    --sidebar-foreground: 220 10% 25%;        /* Dark gray text */
+    --sidebar-primary: 220 70% 50%;         /* Primary blue for active items */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text on active primary */
+    --sidebar-accent: 180 60% 50%;          /* Cyan/Teal for hover */
+    --sidebar-accent-foreground: 180 100% 10%; /* Dark text for hover accent */
+    --sidebar-border: 220 15% 85%;         /* Border color within sidebar */
+    --sidebar-ring: 220 70% 55%;            /* Ring color for focus within sidebar */
 
-    --chart-1: 160 50% 45%; /* Primary Muted Teal/Green */
-    --chart-2: 30 70% 60%;  /* Accent Soft Terracotta/Orange */
-    --chart-3: 200 40% 50%; /* A distinct, muted Blue */
-    --chart-4: 80 30% 50%;  /* A muted Olive Green */
-    --chart-5: 40 40% 65%;  /* A lighter, desaturated Yellow/Ochre */
+    --chart-1: 220 70% 55%; /* Primary Blue */
+    --chart-2: 180 60% 45%;  /* Accent Cyan/Teal */
+    --chart-3: 250 65% 60%; /* A distinct Violet */
+    --chart-4: 200 65% 50%;  /* Another shade of Blue/Steel Blue */
+    --chart-5: 0 0% 50%;  /* Medium Gray */
   }
 
   .dark {
-    --background: 100 10% 15%; /* Dark, muted earthy brown/gray */
-    --foreground: 100 20% 90%; /* Light, slightly warm off-white text */
+    /* --- Techy Light - No Dark Mode: Dark mode variables mirror light mode --- */
+    --background: 220 20% 98%;
+    --foreground: 220 10% 20%;
 
-    --card: 100 10% 20%; /* Slightly lighter dark earthy tone for cards */
-    --card-foreground: 100 20% 90%; /* Light text on dark cards */
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 20%;
 
-    --popover: 100 10% 20%;
-    --popover-foreground: 100 20% 90%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 20%;
 
-    --primary: 160 50% 55%; /* Slightly brighter/lighter Muted Teal/Green for dark mode */
-    --primary-foreground: 100 10% 10%; /* Dark text for contrast on primary */
+    --primary: 220 70% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 100 8% 25%; /* Muted dark earthy gray for secondary elements */
-    --secondary-foreground: 100 15% 80%; /* Lighter earthy gray text on dark secondary */
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 220 60% 35%;
 
-    --muted: 100 8% 22%; /* Darker muted earthy gray */
-    --muted-foreground: 100 10% 65%; /* Medium-light earthy gray for muted text */
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 30 70% 65%; /* Slightly brighter/lighter Soft Terracotta/Orange */
-    --accent-foreground: 30 10% 5%; /* Very dark brown text on accent */
+    --accent: 180 60% 45%;
+    --accent-foreground: 180 100% 10%;
 
-    --destructive: 0 50% 45%; /* Muted red for dark mode */
+    --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 100 10% 30%; /* Dark earthy gray/brown border */
-    --input: 100 8% 22%; /* Dark earthy input background */
-    --ring: 160 50% 60%; /* Ring color based on primary teal/green */
+    --border: 220 15% 88%;
+    --input: 220 20% 96%;
+    --ring: 220 70% 55%;
 
-    /* Sidebar specific theme - Consistent with its "light" mode definition */
-    --sidebar-background: 160 45% 30%;
-    --sidebar-foreground: 100 20% 95%;
-    --sidebar-primary: 30 70% 60%;
-    --sidebar-primary-foreground: 30 10% 10%;
-    --sidebar-accent: 30 70% 70%;
-    --sidebar-accent-foreground: 30 10% 10%;
-    --sidebar-border: 160 40% 20%;
-    --sidebar-ring: 30 70% 65%;
+    /* Sidebar specific theme - Techy Light (Consistent) */
+    --sidebar-background: 220 15% 95%;
+    --sidebar-foreground: 220 10% 25%;
+    --sidebar-primary: 220 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 180 60% 50%;
+    --sidebar-accent-foreground: 180 100% 10%;
+    --sidebar-border: 220 15% 85%;
+    --sidebar-ring: 220 70% 55%;
     
-    --chart-1: 160 50% 55%; /* Brighter Muted Teal/Green for dark mode charts */
-    --chart-2: 30 70% 65%;  /* Brighter Soft Terracotta/Orange */
-    --chart-3: 200 40% 60%; /* Brighter muted Blue */
-    --chart-4: 80 30% 60%;  /* Brighter muted Olive Green */
-    --chart-5: 40 40% 70%;  /* Brighter desaturated Yellow/Ochre */
+    --chart-1: 220 70% 55%;
+    --chart-2: 180 60% 45%;
+    --chart-3: 250 65% 60%;
+    --chart-4: 200 65% 50%;
+    --chart-5: 0 0% 50%;
   }
 }
 
