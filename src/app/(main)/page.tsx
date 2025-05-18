@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import type { FastingLog } from '@/lib/types';
-import { format, formatDistanceStrict, addHours, isAfter, isBefore, isValid, differenceInHours } from 'date-fns';
+import { format, formatDistanceStrict, addHours, isAfter, isBefore, isValid, differenceInHours, differenceInSeconds } from 'date-fns';
 import { Hourglass, PlayCircle, StopCircle, CalendarDays, Edit3, Zap, Brain, Recycle, ShieldHalf, Leaf } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -211,7 +211,9 @@ export default function HomePage() {
           setElapsedHours(0);
           setCurrentStage(null);
         } else if (currentFast.startTime) {
-          setElapsedTime(formatDistanceStrict(now, currentFast.startTime as Date, { addSuffix: false }));
+          const seconds = differenceInSeconds(now, currentFast.startTime as Date);
+          setElapsedTime(`${seconds} seconds`);
+          
           const hours = differenceInHours(now, currentFast.startTime as Date);
           setElapsedHours(hours);
           setCurrentStage(getCurrentFastingStage(hours));
@@ -227,7 +229,7 @@ export default function HomePage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [currentFast, isClient, fastingLogs]); // Added fastingLogs dependency
+  }, [currentFast, isClient, fastingLogs]); 
 
   const handleStartFast = () => {
     const now = new Date();
@@ -251,7 +253,6 @@ export default function HomePage() {
           log.id === currentFast.id ? { ...log, endTime: now } : log
         ).sort((a, b) => (b.startTime as Date).getTime() - (a.startTime as Date).getTime())
       );
-      // No need to set currentFast to null here, the useEffect [fastingLogs, isClient] will handle it
     }
   };
   
@@ -356,6 +357,5 @@ export default function HomePage() {
     </div>
   );
 }
-
 
     
